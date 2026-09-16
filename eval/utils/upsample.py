@@ -5,7 +5,9 @@ import pickle
 from pathlib import Path
 
 import torch
-from pytorch3d.transforms import axis_angle_to_quaternion, quaternion_to_axis_angle
+
+from compat.rotation_conversions import (axis_angle_to_quaternion,
+                                         quaternion_to_axis_angle)
 
 
 def slerp(first, second, amount):

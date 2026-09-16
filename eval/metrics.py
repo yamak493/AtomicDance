@@ -3,9 +3,9 @@
 from pathlib import Path
 
 import numpy as np
-from scipy import linalg
 from scipy.spatial.distance import pdist
 
+from compat import matrix_sqrtm
 from eval.eval_bas import calculate_bas
 
 
@@ -49,10 +49,10 @@ def calc_fid(generated, ground_truth):
     mu_gen, mu_gt = generated.mean(axis=0), ground_truth.mean(axis=0)
     sigma_gen = np.atleast_2d(np.cov(generated, rowvar=False))
     sigma_gt = np.atleast_2d(np.cov(ground_truth, rowvar=False))
-    covariance, _ = linalg.sqrtm(sigma_gen.dot(sigma_gt), disp=False)
+    covariance = matrix_sqrtm(sigma_gen.dot(sigma_gt))
     if not np.isfinite(covariance).all():
         offset = np.eye(sigma_gen.shape[0]) * 1e-5
-        covariance = linalg.sqrtm((sigma_gen + offset).dot(sigma_gt + offset))
+        covariance = matrix_sqrtm((sigma_gen + offset).dot(sigma_gt + offset))
     if np.iscomplexobj(covariance):
         if not np.allclose(np.diagonal(covariance).imag, 0.0, atol=1e-3):
             raise ValueError("FID covariance has a large imaginary component")

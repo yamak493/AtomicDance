@@ -10,9 +10,11 @@ import soundfile as sf
 import torch
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
-from pytorch3d.transforms import (axis_angle_to_quaternion, quaternion_apply,
-                                  quaternion_multiply)
 from tqdm import tqdm
+
+from compat.rotation_conversions import (axis_angle_to_quaternion,
+                                         quaternion_apply,
+                                         quaternion_multiply)
 
 smpl_joints = [
     "root",  # 0

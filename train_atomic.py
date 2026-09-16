@@ -11,6 +11,7 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
+from compat import torch_load
 from dataset.atomic import AtomicMotionLibrary, plan_boundaries
 from dataset.atomic_dataset import AtomicSequenceDataset, collate_atomic_sequences
 from model.atomic_completion import AtomicCompletionDecoder, AtomicCompletionDiffusion
@@ -201,7 +202,7 @@ def train(args):
     start_step = 0
     start_epoch = 0
     if args.resume:
-        checkpoint = torch.load(args.resume, map_location=device)
+        checkpoint = torch_load(args.resume, map_location=device)
         model.load_state_dict(checkpoint["model"])
         optimizer.load_state_dict(checkpoint["optimizer"])
         start_step = int(checkpoint["step"])

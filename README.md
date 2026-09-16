@@ -6,6 +6,7 @@
 [![Project Page](https://img.shields.io/badge/Project-Page-blue?style=plastic&logo=githubpages&logoColor=blue)](https://cxhcmhhh.github.io/AtomicDanceProject/)
 [![Dataset](https://img.shields.io/badge/Google_Drive-Storage-dfa12b?style=flat&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1ETsaetMMWeKV3_E3Lr40BdybAsUAG8WM/view?usp=sharing)
 [![YouTube](https://img.shields.io/badge/YouTube-Video-red?style=plastic&logo=youtube&logoColor=red)](https://www.youtube.com/watch?v=gFabJjdnhdE)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yamak493/AtomicDance/blob/main/colab/AtomicDance_Colab.ipynb)
 
 This repository is the official PyTorch implementation of the paper
 **Music-to-Dance Generation via Atomic Movements**.
@@ -41,11 +42,50 @@ Our paper was accepted by ECCV 2026.
 
 ## Environment Setup
 
+The project runs on two supported setups: the original Conda environment, and
+Google Colab for anyone without a local GPU.
+
+### Google Colab
+
+Open [`colab/AtomicDance_Colab.ipynb`](colab/AtomicDance_Colab.ipynb) and select
+a GPU runtime. It walks through setup, dataset download, training, inference,
+rendering, and evaluation, and mirrors checkpoints to Google Drive so a
+disconnected session can resume with `--resume`.
+
+Colab ships its own CUDA build of PyTorch, so install the notebook's dependency
+set rather than `requirements.txt`, whose CUDA 11.6 wheels would replace it:
+
+```bash
+pip install -r requirements-colab.txt
+```
+
+Neither PyTorch3D nor chumpy is needed there. PyTorch3D has no wheels for
+Colab's Python/CUDA pair and takes tens of minutes to build from source, and
+chumpy 0.70 imports on neither Python 3.11+ nor NumPy 2. The `compat/` package
+covers both: pure-PyTorch rotation conversions, and a loader that reads the
+official SMPL `.pkl` without chumpy. It also absorbs the defaults that moved in
+newer releases, so the same code runs on both setups without version pins:
+
+| Shim | Replaces |
+| --- | --- |
+| `compat.rotation_conversions` | `pytorch3d.transforms` |
+| `compat.smpl.load_smpl` | `smplx.SMPL` on chumpy-backed model files |
+| `compat.torch_load` | `torch.load`, whose `weights_only` default flipped in PyTorch 2.6 |
+| `compat.estimate_tempo` | `librosa.beat.tempo`, moved in librosa 0.10 |
+| `compat.matrix_sqrtm` | `scipy.linalg.sqrtm(disp=False)`, removed in SciPy 1.18 |
+
+Check the setup with the test suite, which needs no dataset:
+
+```bash
+python -m unittest discover -s tests -t .
+```
+
 ### Installation
 
 The code was validated on Linux with Python 3.7.12, PyTorch 1.12.1, and CUDA
 11.6. A CUDA GPU with at least 16 GB memory is recommended for training and
-inference.
+inference. PyTorch3D and chumpy are optional here too; the project uses them
+when present and falls back to `compat/` otherwise.
 
 1. Create the Conda environment.
 
@@ -67,7 +107,9 @@ pip install git+https://github.com/rodrigo-castellon/jukemirlib.git@a91d87fcae0d
 pip install git+https://github.com/facebookresearch/pytorch3d.git@v0.7.1
 ```
 
-If its installation fails, install PyTorch3D 0.7.1 separately with the matching CUDA toolchain.
+If PyTorch3D fails to build, either install 0.7.1 separately with the matching
+CUDA toolchain or skip it: `compat.rotation_conversions` provides the same
+transforms in pure PyTorch and is used automatically when the import fails.
 
 ### Data Preparation
 

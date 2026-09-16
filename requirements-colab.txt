@@ -1,0 +1,25 @@
+# Dependencies for Google Colab and other hosted notebooks.
+#
+#   pip install -r requirements-colab.txt
+#
+# PyTorch is deliberately absent: Colab ships a CUDA build matched to its
+# runtime, and installing the CUDA 11.6 wheels pinned in requirements.txt would
+# replace it with one that does not work there. Everything below is either
+# already present in the Colab image (pip then leaves it alone) or a small pure
+# Python package.
+#
+# PyTorch3D and chumpy are intentionally not listed. PyTorch3D has no wheels for
+# the Colab Python/CUDA pair and takes tens of minutes to build, and chumpy 0.70
+# imports on neither Python 3.11+ nor NumPy 2. The compat/ package replaces both
+# with pure PyTorch rotation conversions and a chumpy-free SMPL loader.
+
+einops>=0.6.1
+librosa>=0.9.2
+matplotlib>=3.3.2
+numpy>=1.21.6
+scipy>=1.7.3
+SoundFile>=0.10.3
+tqdm>=4.45.0
+
+# Evaluation against AIST++ ground truth only.
+smplx>=0.1.28

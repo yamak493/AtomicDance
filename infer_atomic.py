@@ -17,6 +17,7 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 
+from compat import torch_load
 from data.audio_extraction.baseline_features import FPS, SR, extract_audio
 from dataset.atomic import labels_to_segments, refine_plan
 from dataset.quaternion import ax_from_6v
@@ -40,10 +41,7 @@ def _load_checkpoint(path, expected_stage, device):
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError("missing {} checkpoint: {}".format(expected_stage, path))
-    try:
-        checkpoint = torch.load(str(path), map_location="cpu", mmap=True)
-    except TypeError:
-        checkpoint = torch.load(str(path), map_location="cpu")
+    checkpoint = torch_load(path, map_location="cpu", mmap=True)
     if checkpoint.get("stage") != expected_stage:
         raise ValueError(
             "{} is a {} checkpoint, expected {}".format(
@@ -274,7 +272,7 @@ def infer_completion(
 
 
 def unnormalize_motion(motion, normalizer_path):
-    normalizer = torch.load(str(normalizer_path), map_location="cpu")
+    normalizer = torch_load(normalizer_path)
     data_min = normalizer["data_min"].float()
     data_max = normalizer["data_max"].float()
     data_range = data_max - data_min

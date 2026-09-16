@@ -5,9 +5,10 @@ from pathlib import Path
 os.environ.setdefault("NUMBA_CACHE_DIR", "/tmp/edge-numba-cache")
 
 import librosa
-import librosa as lr
 import numpy as np
 from tqdm import tqdm
+
+from compat import estimate_tempo
 
 FPS = 30
 HOP_LENGTH = 512
@@ -73,7 +74,7 @@ def extract_audio(data, audio_name, max_frames=5 * FPS):
     try:
         start_bpm = _get_tempo(audio_name)
     except (AssertionError, IndexError, ValueError):
-        start_bpm = lr.beat.tempo(y=data, sr=SR)[0]
+        start_bpm = estimate_tempo(y=data, sr=SR)
 
     tempo, beat_idxs = librosa.beat.beat_track(
         onset_envelope=envelope,

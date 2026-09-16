@@ -8,6 +8,8 @@ os.environ.setdefault("NUMBA_CACHE_DIR", "/tmp/edge-numba-cache")
 import librosa
 import numpy as np
 
+from compat import estimate_tempo
+
 
 def _get_tempo(audio_name):
     fields = audio_name.split("_")
@@ -31,7 +33,7 @@ def extract_music_beat_features(audio_path, fps=30):
     try:
         start_bpm = _get_tempo(Path(audio_path).stem)
     except ValueError:
-        start_bpm = float(librosa.beat.tempo(y=audio, sr=sample_rate)[0])
+        start_bpm = estimate_tempo(y=audio, sr=sample_rate)
     _, beat_indices = librosa.beat.beat_track(
         onset_envelope=envelope,
         sr=sample_rate,

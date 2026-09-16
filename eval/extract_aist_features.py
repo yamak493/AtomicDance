@@ -9,9 +9,9 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from smplx import SMPL
 from tqdm import tqdm
 
+from compat.smpl import load_smpl
 from eval.utils.kinetic import extract_kinetic_features
 from eval.utils.manual import extract_manual_features
 from eval.utils.motionbeat import extract_dance_beat_features
@@ -28,7 +28,7 @@ def _smpl_model(model_path):
     if model_path is None:
         raise ValueError("--smpl-model is required for PKLs without full_pose")
     if _WORKER_SMPL is None or _WORKER_SMPL_PATH != model_path:
-        _WORKER_SMPL = SMPL(model_path=model_path, gender="MALE", batch_size=1)
+        _WORKER_SMPL = load_smpl(model_path, gender="MALE", batch_size=1)
         _WORKER_SMPL_PATH = model_path
     return _WORKER_SMPL
 
