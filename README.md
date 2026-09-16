@@ -48,9 +48,10 @@ Google Colab for anyone without a local GPU.
 ### Google Colab
 
 Open [`colab/AtomicDance_Colab.ipynb`](colab/AtomicDance_Colab.ipynb) and select
-a GPU runtime. It walks through setup, dataset download, training, inference,
-rendering, and evaluation, and mirrors checkpoints to Google Drive so a
-disconnected session can resume with `--resume`.
+a GPU runtime. It fetches the pretrained checkpoints and goes straight to
+generation, so training is not required; sections 1-5 run in minutes. Training
+is an optional section that mirrors checkpoints to Google Drive, so a
+disconnected session can resume with `--resume`. Evaluation is optional too.
 
 Colab ships its own CUDA build of PyTorch, so install the notebook's dependency
 set rather than `requirements.txt`, whose CUDA 11.6 wheels would replace it:

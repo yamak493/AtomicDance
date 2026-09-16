@@ -22,6 +22,7 @@ def torch_load(path, map_location="cpu", mmap=None):
     """
     kwargs = {"map_location": map_location}
     if mmap:
+        # Only the zipfile format can be memory-mapped; legacy .pt files raise.
         kwargs["mmap"] = True
     try:
         return torch.load(str(path), weights_only=False, **kwargs)
@@ -29,6 +30,10 @@ def torch_load(path, map_location="cpu", mmap=None):
         # PyTorch < 1.13 has no weights_only parameter; < 2.1 has no mmap.
         kwargs.pop("mmap", None)
         return torch.load(str(path), **kwargs)
+    except RuntimeError:
+        if not kwargs.pop("mmap", None):
+            raise
+        return torch.load(str(path), weights_only=False, **kwargs)
 
 
 def estimate_tempo(y, sr):

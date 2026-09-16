@@ -84,6 +84,21 @@ class TorchLoadTests(unittest.TestCase):
             self.assertEqual(checkpoint["args"]["seq_len"], 150)
             self.assertTrue(torch.equal(torch_load(path, mmap=True)["model"]["w"], torch.ones(2)))
 
+    def test_falls_back_when_a_checkpoint_cannot_be_memory_mapped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "legacy.pt")
+            # Only the zipfile format supports mmap; the legacy one must still load.
+            torch.save({"stage": "planner"}, path, _use_new_zipfile_serialization=False)
+            self.assertEqual(torch_load(path, mmap=True)["stage"], "planner")
+
+    def test_reports_a_file_that_is_not_a_checkpoint(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, "garbage.pt")
+            with open(path, "wb") as handle:
+                handle.write(b"not a checkpoint at all")
+            with self.assertRaises(Exception):
+                torch_load(path, mmap=True)
+
 
 class LibrosaShimTests(unittest.TestCase):
     def test_estimate_tempo_returns_positive_bpm(self):
