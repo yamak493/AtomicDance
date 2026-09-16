@@ -81,6 +81,29 @@ Check the setup with the test suite, which needs no dataset:
 python -m unittest discover -s tests -t .
 ```
 
+#### Known difference from the pinned environment
+
+Training reads the music features shipped in `music.npy`, but inference
+recomputes them from the audio with whatever librosa is installed, so the Colab
+stack introduces a small train/inference mismatch that the pinned librosa 0.9.2
+does not have. Measured on identical audio, 0.9.2 against 0.11.0:
+
+| Feature block | Dims | Difference |
+| --- | --- | --- |
+| onset envelope | 1 | none (bit-identical) |
+| MFCC | 20 | none (bit-identical) |
+| chroma CENS | 12 | 2.1e-2 absolute, 2.5% relative (max) |
+| onset peak one-hot | 1 | none |
+| beat one-hot | 1 | 3 of 241 frames |
+
+The chroma difference comes from `librosa.cqt`, whose `res_type` default moved
+from `None` to `soxr_hq` in 0.10; the `auto_resample` branch that `None` used to
+select was deleted, so the old behaviour cannot be restored through parameters.
+The beat difference is internal to `beat_track` — the onset envelope feeding it
+is identical and the starting BPM was held fixed. How much this shifts generated
+motion has not been measured, and reproducing published numbers exactly still
+calls for the pinned environment.
+
 ### Installation
 
 The code was validated on Linux with Python 3.7.12, PyTorch 1.12.1, and CUDA
