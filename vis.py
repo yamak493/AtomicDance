@@ -1,4 +1,5 @@
 import os
+import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -250,9 +251,25 @@ def skeleton_render(
                 out, f"{epoch}_{os.path.splitext(os.path.basename(name))[0]}.mp4"
             )
         if render:
-            out = os.system(
-                f"ffmpeg -loglevel error -stream_loop 0 -y -i {gifname} -i {audioname} -shortest -c:v libx264 -crf 26 -c:a aac -q:a 4 {outname}"
+            # Pass the arguments as a list rather than a shell string: audio
+            # filenames routinely contain spaces or parentheses, which a shell
+            # would split into separate arguments.
+            result = subprocess.run(
+                [
+                    "ffmpeg", "-loglevel", "error", "-stream_loop", "0", "-y",
+                    "-i", gifname, "-i", audioname, "-shortest",
+                    "-c:v", "libx264", "-crf", "26", "-c:a", "aac", "-q:a", "4",
+                    outname,
+                ],
+                capture_output=True,
+                text=True,
             )
+            if result.returncode != 0:
+                raise RuntimeError(
+                    "ffmpeg could not write {}: {}".format(
+                        outname, result.stderr.strip() or "exit status {}".format(result.returncode)
+                    )
+                )
     else:
         if render:
             # actually save the gif
